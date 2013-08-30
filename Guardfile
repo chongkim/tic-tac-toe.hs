@@ -8,18 +8,19 @@ module ::Guard
       end
     end
     def run_all
-      Dir["spec/**.hs"].each do |path|
+      Dir["spec/**Spec.hs"].each do |path|
         run(path)
       end
     end
     def run(path)
-      puts("runhaskell -ilib #{path}")
-      system("runhaskell -ilib #{path}")
+      cmd = "runhaskell #{path}"
+      puts cmd
+      system cmd
     end
   end
 end
 
 guard "haskell" do
-  watch(%r{^lib/(.*)\.hs}) { |m,f| "spec/#{f}_spec.hs" }
-  watch(%r{^spec/.*\.hs})
+  watch(%r{spec/.*\.hs})
+  watch(%r{(TTT/.*)\.hs}) { |m,base| "spec/#{base}Spec.hs" }
 end
