@@ -8,7 +8,7 @@ module ::Guard
       end
     end
     def run_all
-      Dir["spec/**Spec.hs"].each do |path|
+      Dir["spec/**/*[Ss]pec.*"].each do |path|
         run(path)
       end
     end
@@ -21,6 +21,7 @@ module ::Guard
 end
 
 guard "haskell" do
-  watch(%r{spec/.*\.hs})
-  watch(%r{(TTT/.*)\.hs}) { |m,base| "spec/#{base}Spec.hs" }
+  watch(%r{^spec/.*spec.*$}i)
+  watch(%r{^(TTT/.*)\.([^./]+)$}) { |m| "spec/#{m[1]}Spec.#{m[2]}" }
 end
+
