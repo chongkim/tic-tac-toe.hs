@@ -1,52 +1,70 @@
 module TTT.Position (
   Position (..)
- ,new
+ ,initPosition
  ,render
  ,move
- ,possibleMoves
+ ,possibleMovesFor
  ,isWinFor
  ,evalLeaf
-) where
+ ,minimax
+)  where
 
-import Data.List.Split
 import Data.List
+import Data.List.Split
 
 dim = 3
-size = 9
+size = dim * dim
+
 data Position = Position String Char deriving (Show, Eq)
 
-new :: Position
-new = Position (replicate size ' ') 'X'
+initPosition :: Position
+initPosition = Position (replicate size ' ') 'X'
 
 render :: Position -> String
 render (Position board turn) =
   (unlines .
-    intersperse "-----------" .
-    map (\row -> ((concat . intersperse "|") row)) .
-    chunksOf dim . map putCellContent . zip [0..]) board
-  where putCellContent (idx, ' ') = " " ++ show idx ++ " "
-        putCellContent (_, x) = [' ', x, ' ']
+  intersperse "-----------" .
+   map (concat . intersperse "|") .
+   chunksOf dim .
+   zipWith (\idx turn -> " " ++ (case turn of
+                                ' ' -> show idx
+                                _ -> [turn]) ++ " ") [0..])
+  board
 
 other :: Char -> Char
 other 'X' = 'O'
 other 'O' = 'X'
 
 update :: Int -> Char -> String -> String
-update 0 c (x:xs) = c:xs
-update n c (x:xs) = x:(update (n - 1) c xs)
+update _ _ [] = []
+update 0 turn (_:xs) =  turn:xs
+update idx turn (x:xs) = x:(update (idx - 1) turn xs)
 
 move :: Position -> Int -> Position
 move (Position board turn) idx =
   Position (update idx turn board) (other turn)
 
-possibleMoves (Position board turn) =
-  (map fst . filter (\(x,y) -> y == ' ') . zip [0..]) board
+possibleMovesFor :: Position -> [Int]
+possibleMovesFor (Position board turn) =
+  (map fst . filter (\(i,c) -> c == ' ') . zip [0..size-1]) board
 
+isWinFor :: Position -> Char -> Bool
 isWinFor (Position board _) turn =
-  any lineMatch (rows ++ (transpose rows)) ||
-  lineMatch (map (\idx -> board !! idx) [0,(dim+1)..size]) ||
-  lineMatch (map (\idx -> board !! idx) [(dim-1),(2*dim-2)..(size-2)])
-  where lineMatch = all (\x -> x == turn)
-        rows = chunksOf dim board
+  any isWinLine (chunksOf dim board) ||
+  any isWinLine (transpose (chunksOf dim board)) ||
+  isWinLine (map (board !!) [0,dim+1..size-1]) ||
+  isWinLine (map (board !!) [dim-1,dim*2-2..size-2])
+  where isWinLine line = all (==turn) line
 
-evalLeaf p = Nothing
+countEmpty :: Position -> Int
+countEmpty (Position board _) = (length . filter (==' ')) board
+
+evalLeaf :: Position -> Maybe Int
+evalLeaf position
+  | position `isWinFor` 'X' = Just 100
+  | position `isWinFor` 'O' = Just (-100)
+  | countEmpty position == 0 = Just 0
+  | otherwise = (Nothing :: Maybe Int)
+
+minimax :: Position -> Int
+minimax position = 100
