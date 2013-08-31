@@ -1,40 +1,52 @@
-module TTT.Position where
+module TTT.Position (
+  Position (..)
+ ,new
+ ,render
+ ,move
+ ,possibleMoves
+ ,isWinFor
+ ,evalLeaf
+) where
 
 import Data.List.Split
 import Data.List
 
-size = 9
 dim = 3
+size = 9
+data Position = Position String Char deriving (Show, Eq)
 
-type Board = String
-type Turn = Char
-
-data Position = Position Board Turn
-
+new :: Position
 new = Position (replicate size ' ') 'X'
-board (Position b _) = b
-turn (Position _ t) = t
 
-render (Position b _) = (unlines
-                       . joinWithHorizontalLine
-                       . addSpaces
-                       . putBars
-                       . breakIntoRows
-                       . replaceSpaces
-                       . pairUpWithIndex) b
-  where pairUpWithIndex b = zip b [0..]
-        putBars = map (\s -> intersperse '|' s)
-        breakIntoRows = chunksOf dim
-        addSpaces = map (\s -> " " ++ (intersperse ' ' s) ++ " ")
-        replaceSpaces = map replaceSpace
-        replaceSpace (' ',i) = show i !! 0
-        replaceSpace (c,i) = c
-        joinWithHorizontalLine = intersperse "-----------"
+render :: Position -> String
+render (Position board turn) =
+  (unlines .
+    intersperse "-----------" .
+    map (\row -> ((concat . intersperse "|") row)) .
+    chunksOf dim . map putCellContent . zip [0..]) board
+  where putCellContent (idx, ' ') = " " ++ show idx ++ " "
+        putCellContent (_, x) = [' ', x, ' ']
 
--- move (Position b t) idx = Position "X  "
---                                 ++ "   "
---                                 ++ "   " 'O'
+other :: Char -> Char
+other 'X' = 'O'
+other 'O' = 'X'
 
-move (Position b t) idx = Position ("X  "
-                                 ++ "   "
-                                 ++ "   ") 'a'
+update :: Int -> Char -> String -> String
+update 0 c (x:xs) = c:xs
+update n c (x:xs) = x:(update (n - 1) c xs)
+
+move :: Position -> Int -> Position
+move (Position board turn) idx =
+  Position (update idx turn board) (other turn)
+
+possibleMoves (Position board turn) =
+  (map fst . filter (\(x,y) -> y == ' ') . zip [0..]) board
+
+isWinFor (Position board _) turn =
+  any lineMatch (rows ++ (transpose rows)) ||
+  lineMatch (map (\idx -> board !! idx) [0,(dim+1)..size]) ||
+  lineMatch (map (\idx -> board !! idx) [(dim-1),(2*dim-2)..(size-2)])
+  where lineMatch = all (\x -> x == turn)
+        rows = chunksOf dim board
+
+evalLeaf p = Nothing
