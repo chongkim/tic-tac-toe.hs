@@ -23,7 +23,7 @@ module ::Guard
       end
     end
     def run(path)
-      cmd = "runhaskell"
+      cmd = "runghc"
       cmd << " #{@options[:cli]}" if @options[:cli]
       cmd << " #{path}"
       puts cmd
