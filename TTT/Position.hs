@@ -4,7 +4,6 @@ module TTT.Position (
  ,render
  ,move
  ,possibleMoves
- ,possiblePositions
  ,isWinFor
  ,minimax
  ,bestMove
@@ -22,30 +21,28 @@ initPosition :: Position
 initPosition = Position (replicate size ' ') 'X'
 
 render :: Position -> String
-render (Position board turn) = (
+render (Position board turn) =
   unlines . intersperse (replicate (dim*4-1) '-') .
-  map (concat . intersperse "|") . chunksOf dim  .
+  map (concat . intersperse "|") . chunksOf dim .
   map (\(i,c) -> " "++(if c==' ' then show i else [c])++" ") .
-  zip [0..]) board
+  zip [0..] $ board
 
 choose :: Char -> a -> a -> a
-choose 'X' x o = x
-choose 'O' x o = o
+choose 'X' x _ = x
+choose 'O' _ o = o
 
 other :: Char -> Char
 other turn = choose turn 'O' 'X'
 
 move :: Position -> Int -> Position
-move (Position board turn) idx = Position (update idx turn board) (other turn)
+move (Position board turn) idx =
+  Position (update idx turn board) (other turn)
   where update 0 turn (_:xs) = turn:xs
         update idx turn (x:xs) = x:(update (idx - 1) turn xs)
 
 possibleMoves :: Position -> [Int]
-possibleMoves (Position board _) = (
-  map fst . filter (\(i,c) -> c==' ') . zip [0..]) board
-
-possiblePositions :: Position -> [Position]
-possiblePositions position = map (position `move`) (possibleMoves position)
+possibleMoves (Position board turn) =
+  map fst . filter (\(i,c) -> c==' ') . zip [0..] $ board
 
 isWinFor :: Position -> Char -> Bool
 isWinFor (Position board _) turn =
@@ -56,18 +53,18 @@ isWinFor (Position board _) turn =
         matchLine = all (==turn)
 
 spaces :: Position -> Int
-spaces (Position board turn) = (length . filter (==' ')) board
+spaces (Position board turn) = length . filter (==' ') $ board
 
 minimax :: Position -> Int
-minimax position@(Position _ turn)
+minimax position@(Position board turn)
   | position `isWinFor` 'X' = 100
   | position `isWinFor` 'O' = (-100)
   | spaces position == 0 = 0
-  | otherwise = (choose turn (+) (-))
-    (((choose turn maximum minimum) . map minimax) $
-      possiblePositions position)
+  | otherwise =
+    choose turn (+) (-)
+    (choose turn maximum minimum . map (minimax . (position `move`)) $
+      possibleMoves position)
     (spaces position)
 
-bestMove position@(Position board turn) = (
-  fst . maximumBy (compare `on` snd) . zip (possibleMoves position) . map minimax)
-  (possiblePositions position)
+bestMove position =
+  map (\i -> (i, minimax $ position `move` i)) $ possibleMoves position

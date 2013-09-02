@@ -11,60 +11,57 @@ main = hspec $ do
         initPosition `shouldBe` (Position ("   "++"   "++"   ") 'X')
     context "render" $ do
       it "should render a position" $ do
-        render (Position (" X "
-                        ++"OO "
-                        ++"   ") 'X') `shouldBe` " 0 | X | 2 \n"
+        render (Position ("XX "
+                        ++" OO"
+                        ++"   ") 'X') `shouldBe` " X | X | 2 \n"
                                               ++ "-----------\n"
-                                              ++ " O | O | 5 \n"
+                                              ++ " 3 | O | O \n"
                                               ++ "-----------\n"
                                               ++ " 6 | 7 | 8 \n"
     context "move" $ do
       it "should make a move" $ do
-        (Position (" X "
-                 ++"O  "
-                 ++"   ") 'X') `move` 0 `shouldBe` (Position ("XX "
-                                                            ++"O  "
-                                                            ++"   ") 'O')
+        (Position ("XX "
+                 ++"   "
+                 ++" OO") 'X') `move` 3 `shouldBe` (Position ("XX "
+                                                            ++"X  "
+                                                            ++" OO") 'O')
     context "possibleMoves" $ do
       it "should list possible moves for a position" $ do
         possibleMoves (Position ("XX "
-                               ++"O  "
-                               ++"   ") 'X') `shouldBe` [2,4,5,6,7,8]
-    context "possiblePositions" $ do
-      it "should list next possible positions for a position" $ do
-        possiblePositions (Position ("XO "
-                                   ++" X "
-                                   ++"   ") 'O')
-          `shouldSatisfy`
-          ((Position ("XO "
-                    ++" XO"
-                    ++"   ") 'X') `elem`)
+                               ++" O "
+                               ++"   ") 'O') `shouldBe` [2,3,5,6,7,8]
     context "isWinFor" $ do
       it "should determine no win" $ do
         initPosition `isWinFor` 'X' `shouldBe` False
-      it "should determine win for X on first row" $ do
-        (Position ("XXX"++"   "++"   ") 'X') `isWinFor` 'X' `shouldBe` True
-      it "should determine win for X on second row" $ do
-        (Position ("   "++"XXX"++"   ") 'X') `isWinFor` 'X' `shouldBe` True
-      it "should determine win for X on third row" $ do
-        (Position ("   "++"   "++"XXX") 'X') `isWinFor` 'X' `shouldBe` True
-      it "should determine win for O on first col" $ do
+      it "should determine a win for X on first row" $ do
+        (Position ("XXX"
+                 ++"   "
+                 ++"   ") 'X') `isWinFor` 'X' `shouldBe` True
+      it "should determine a win for X on second row" $ do
+        (Position ("   "
+                 ++"XXX"
+                 ++"   ") 'X') `isWinFor` 'X' `shouldBe` True
+      it "should determine a win for X on third row" $ do
+        (Position ("   "
+                 ++"   "
+                 ++"XXX") 'X') `isWinFor` 'X' `shouldBe` True
+      it "should determine a win for O on first col" $ do
         (Position ("O  "
                  ++"O  "
                  ++"O  ") 'X') `isWinFor` 'O' `shouldBe` True
-      it "should determine win for O on second col" $ do
+      it "should determine a win for O on second col" $ do
         (Position (" O "
                  ++" O "
                  ++" O ") 'X') `isWinFor` 'O' `shouldBe` True
-      it "should determine win for O on third col" $ do
+      it "should determine a win for O on third col" $ do
         (Position ("  O"
                  ++"  O"
                  ++"  O") 'X') `isWinFor` 'O' `shouldBe` True
-      it "should determine win for O on major diagonal" $ do
+      it "should determine a win for O on major diagonal" $ do
         (Position ("O  "
                  ++" O "
                  ++"  O") 'X') `isWinFor` 'O' `shouldBe` True
-      it "should determine win for O on minor diagonal" $ do
+      it "should determine a win for O on minor diagonal" $ do
         (Position ("  O"
                  ++" O "
                  ++"O  ") 'X') `isWinFor` 'O' `shouldBe` True
@@ -78,15 +75,15 @@ main = hspec $ do
                          ++"XOX"
                          ++"XOX") 'X') `shouldBe` 0
       it "should determine a win for X in 1 move" $ do
-        minimax (Position ("XX "
-                         ++"   "
+        minimax (Position ("X  "
+                         ++" X "
                          ++"   ") 'X') `shouldBe` 107
       it "should determine a win for O in 1 move" $ do
-        minimax (Position ("OO "
-                         ++"   "
+        minimax (Position ("O  "
+                         ++" O "
                          ++"   ") 'O') `shouldBe` (-107)
     context "bestMove" $ do
       it "should determine the best move" $ do
-        bestMove (Position ("X  "
-                          ++" X "
-                          ++"   ") 'X') `shouldBe` 8
+        bestMove (Position ("   "
+                          ++"   "
+                          ++"   ") 'X') `shouldBe` []
