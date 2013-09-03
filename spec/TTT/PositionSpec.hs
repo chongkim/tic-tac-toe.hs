@@ -92,13 +92,13 @@ main = hspec $ do
                           ++" O "
                           ++"   ") 'O') `shouldBe` 8
     context "isEnd" $ do
-      it "should determine the game has not ended" $ do
+      it "should determine it is not the end" $ do
         isEnd (Position ("   "++"   "++"   ") 'X') `shouldBe` False
-      it "should determine the game has not ended due to win for X" $ do
+      it "should determine it is the end due to win for X" $ do
         isEnd (Position ("XXX"++"   "++"   ") 'X') `shouldBe` True
-      it "should determine the game has not ended due to win for O" $ do
+      it "should determine it is the end due to win for O" $ do
         isEnd (Position ("OOO"++"   "++"   ") 'X') `shouldBe` True
-      it "should determine the game has not ended due to draw" $ do
+      it "should determine it is the end due to draw" $ do
         isEnd (Position ("OXO"
                        ++"XOX"
                        ++"XOX") 'X') `shouldBe` True
@@ -106,4 +106,5 @@ main = hspec $ do
       it "should determine the position is blank" $ do
         isBlank (Position ("   "++"   "++"   ") 'X') `shouldBe` True
       it "should determine the position is not blank" $ do
-        isBlank (Position ("OXO"++"   "++"   ") 'X') `shouldBe` False
+        isBlank (Position ("X  "++"   "++"   ") 'X') `shouldBe` False
+

@@ -26,8 +26,8 @@ render :: Position -> String
 render (Position board turn) =
   unlines . intersperse (replicate (dim*4-1) '-') .
   map (concat . intersperse "|") . chunksOf dim .
-  map (\(i,c) -> " "++(if c==' ' then show i else [c])++" ") .
-  zip [0..] $ board
+  map (\(i,c) -> " "++(if c==' ' then show i else [c])++" ") $
+  zip [0..] board
 
 choose :: Char -> a -> a -> a
 choose 'X' x _ = x
@@ -44,15 +44,15 @@ move (Position board turn) idx =
 
 possibleMoves :: Position -> [Int]
 possibleMoves (Position board turn) =
-  map fst . filter (\(i,c) -> c==' ') . zip [0..] $ board
+  map fst . filter ((==' ') . snd) $ zip [0..] board
 
 isWinFor :: Position -> Char -> Bool
 isWinFor (Position board _) turn =
-  any matchLine rows || any matchLine (transpose rows) ||
-  matchLine (map (board !!) [0,dim+1..size-1]) ||
-  matchLine (map (board !!) [dim-1,dim*2-2..size-2])
+  any matchLines rows || any matchLines (transpose rows) ||
+  matchLines (map (board !!) [0,dim+1..size-1]) ||
+  matchLines (map (board !!) [dim-1,dim*2-2..size-2])
   where rows = chunksOf dim board
-        matchLine = all (==turn)
+        matchLines = all (==turn)
 
 spaces :: Position -> Int
 spaces (Position board turn) = length $ filter (==' ') board
@@ -69,9 +69,10 @@ minimax position@(Position board turn)
     (spaces position)
 
 bestMove :: Position -> Int
-bestMove position@(Position _ turn) =
+bestMove position@(Position board turn) =
   fst . (choose turn maximumBy minimumBy) (compare `on` snd) .
-  map (\i -> (i, minimax $ position `move` i)) $ possibleMoves position
+  map (\i -> (i, minimax $ position `move` i)) $
+  possibleMoves position
 
 isEnd :: Position -> Bool
 isEnd position =

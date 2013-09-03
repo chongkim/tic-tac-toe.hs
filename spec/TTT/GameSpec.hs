@@ -6,5 +6,6 @@ import TTT.Game
 
 main = hspec $ do
   describe "TTT.Game" $ do
-    it "should play" $ do
-      play
+    context "play" $ do
+      it "should play" $ do
+        play
