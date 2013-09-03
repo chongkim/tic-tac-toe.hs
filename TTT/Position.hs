@@ -30,8 +30,8 @@ render (Position board turn) =
   zip [0..] board
 
 choose :: Char -> a -> a -> a
-choose 'X' x _ = x
-choose 'O' _ o = o
+choose 'X' x o = x
+choose 'O' x o = o
 
 other :: Char -> Char
 other turn = choose turn 'O' 'X'
@@ -42,15 +42,16 @@ move (Position board turn) idx =
   where update 0 turn (_:xs) = turn:xs
         update idx turn (x:xs) = x:(update (idx - 1) turn xs)
 
-possibleMoves :: Position -> [Int]
-possibleMoves (Position board turn) =
+possibleMoves :: Position -> [(Int, Position)]
+possibleMoves position@(Position board turn) =
+  map (\i -> (i, position `move` i)) .
   map fst . filter ((==' ') . snd) $ zip [0..] board
 
 isWinFor :: Position -> Char -> Bool
 isWinFor (Position board _) turn =
   any matchLines rows || any matchLines (transpose rows) ||
-  matchLines (map (board !!) [0,dim+1..size-1]) ||
-  matchLines (map (board !!) [dim-1,dim*2-2..size-2])
+  matchLines (map (board !!) [0, dim+1 .. size - 1]) ||
+  matchLines (map (board !!) [dim-1, dim*2-2 .. size - 2])
   where rows = chunksOf dim board
         matchLines = all (==turn)
 
@@ -64,15 +65,14 @@ minimax position@(Position board turn)
   | spaces position == 0 = 0
   | otherwise =
     (choose turn (+) (-))
-    ((choose turn maximum minimum) . map (\i -> minimax $ position `move` i)
-      $ possibleMoves position)
+    ((choose turn maximum minimum) . map (minimax . snd) $
+      possibleMoves position)
     (spaces position)
 
 bestMove :: Position -> Int
-bestMove position@(Position board turn) =
+bestMove position@(Position _ turn) =
   fst . (choose turn maximumBy minimumBy) (compare `on` snd) .
-  map (\i -> (i, minimax $ position `move` i)) $
-  possibleMoves position
+  map (\(i,p) -> (i,minimax p)) $ possibleMoves position
 
 isEnd :: Position -> Bool
 isEnd position =

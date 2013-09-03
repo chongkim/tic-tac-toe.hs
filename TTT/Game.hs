@@ -7,56 +7,58 @@ import System.Random
 
 data Player = Computer | Human deriving (Show, Eq)
 
+other :: Player -> Player
+other Human = Computer
+other Computer = Human
+
 askForPlayer = do
-  putStrLn "Who do you want to play first?"
+  putStrLn "Who do you want to move first?"
   putStrLn "  1. Computer"
   putStrLn "  2. Human"
   ans <- getLine
   case ans of
     "1" -> return Computer
     "2" -> return Human
-    _ -> askForPlayer
-
-other :: Player -> Player
-other Human = Computer
-other Computer = Human
+    _   -> askForPlayer
 
 askForMove = do
-  putStrLn "Move (q - to quit)"
+  putStrLn "Move (q - quit)"
   ans <- getLine
   if ans == "q" then
     return 9
-  else if ((ans !! 0) `elem` ['0'..'8']) then
+  else if ans!!0 `elem` ['0'..'8'] then
     return (read ans :: Int)
   else
     askForMove
 
+displayWinner position x o = do
+  putStrLn (render position)
+  if position `isWinFor` 'X' then do
+    putStrLn ("Winner "++(show x))
+  else if position `isWinFor` 'O' then do
+    putStrLn ("Winner "++(show o))
+  else do
+    putStrLn ("Draw.")
+
 moveLoop position player x o = do
-  idx <- if player == Human then do
-           askForMove
-         else
+  putStrLn (render position)
+  idx <- if player == Computer then
            if isBlank position then do
              randomRIO (0,8)
            else
              return (bestMove position)
-  if idx < 9 then do
+         else
+           askForMove
+  if idx == 9 then do
+    putStrLn "Goodbye"
+  else do
     position <- return (position `move` idx)
-    putStrLn (render position)
-    if isEnd position then
-      if position `isWinFor` 'X' then do
-        putStrLn ("Winner: "++(show x))
-      else if position `isWinFor` 'O' then do
-        putStrLn ("Winner: "++(show o))
-      else
-        putStrLn "Draw."
-    else
+    if isEnd position then do
+      displayWinner position x o
+    else do
       moveLoop position (other player) x o
-  else
-    putStrLn "Goodbye!"
 
 play = do
   player <- askForPlayer
   position <- return initPosition
-  putStrLn (render position)
   moveLoop position player player (other player)
-  putStrLn "done"
