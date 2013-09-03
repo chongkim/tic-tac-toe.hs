@@ -28,11 +28,11 @@ main = hspec $ do
     context "possibleMoves" $ do
       it "should list possible moves for a position" $ do
         possibleMoves (Position ("XX "
-                              ++ " OO"
-                              ++"   ") 'X') `shouldBe` [2,3,6,7,8]
+                               ++" OO"
+                               ++"   ") 'X') `shouldBe` [2,3,6,7,8]
     context "isWinFor" $ do
       it "should determine no win" $ do
-        initPosition `isWinFor` 'X' `shouldBe` False
+        (Position ("   "++"   "++"   ") 'X') `isWinFor` 'X' `shouldBe` False
       it "should determine a win for X on first row" $ do
         (Position ("XXX"
                  ++"   "
@@ -75,12 +75,12 @@ main = hspec $ do
                          ++"XOX"
                          ++"XOX") 'X') `shouldBe` 0
       it "should determine a win for X in 1 move" $ do
-        minimax (Position ("XX "
-                         ++"   "
+        minimax (Position ("X  "
+                         ++" X "
                          ++"   ") 'X') `shouldBe` 107
       it "should determine a win for O in 1 move" $ do
-        minimax (Position ("OO "
-                         ++"   "
+        minimax (Position ("O  "
+                         ++" O "
                          ++"   ") 'O') `shouldBe` (-107)
     context "bestMove" $ do
       it "should find the best move for X" $ do
@@ -92,13 +92,18 @@ main = hspec $ do
                           ++" O "
                           ++"   ") 'O') `shouldBe` 8
     context "isEnd" $ do
-      it "should determine that it is not the end" $ do
+      it "should determine the game has not ended" $ do
         isEnd (Position ("   "++"   "++"   ") 'X') `shouldBe` False
-      it "should determine if the game has ended due to win for X" $ do
+      it "should determine the game has not ended due to win for X" $ do
         isEnd (Position ("XXX"++"   "++"   ") 'X') `shouldBe` True
-      it "should determine if the game has ended due to win for O" $ do
+      it "should determine the game has not ended due to win for O" $ do
         isEnd (Position ("OOO"++"   "++"   ") 'X') `shouldBe` True
-      it "should determine if the game has ended due to a draw" $ do
+      it "should determine the game has not ended due to draw" $ do
         isEnd (Position ("OXO"
                        ++"XOX"
                        ++"XOX") 'X') `shouldBe` True
+    context "isBlank" $ do
+      it "should determine the position is blank" $ do
+        isBlank (Position ("   "++"   "++"   ") 'X') `shouldBe` True
+      it "should determine the position is not blank" $ do
+        isBlank (Position ("OXO"++"   "++"   ") 'X') `shouldBe` False

@@ -1,6 +1,5 @@
 module TTT.Game (
   Player (..)
- ,askForPlayer
  ,play
 )  where
 
@@ -9,12 +8,11 @@ import System.Random
 
 data Player = Computer | Human deriving (Show, Eq)
 
-other :: Player -> Player
-other Human = Computer
 other Computer = Human
+other Human = Computer
 
 askForPlayer = do
-  putStrLn "Who do you want to go first?"
+  putStrLn "Who do you want to play first?"
   putStrLn "  1. Computer"
   putStrLn "  2. Human"
   ans <- getLine
@@ -23,31 +21,41 @@ askForPlayer = do
     "2" -> return Human
     _ -> askForPlayer
 
-askForMove = do
-  putStrLn "Make a move"
+askForMove position = do
+  putStrLn "Move (or q to quit)"
   ans <- getLine
-  if (ans !! 0) `elem` ['0'..'8']
-    then return (read ans :: Int)
-    else askForMove
+  if ans == "q" then
+    return 9
+  else if (ans !! 0) `elem` ['0'..'8'] then do
+    return (read ans :: Int)
+  else
+    askForMove position
 
-moveLoop position player = do
+moveLoop position player x o = do
   idx <- if player == Human then do
-           putStrLn (render position)
-           askForMove
-         else do
-           return $ bestMove position
-           -- if isBlank position then do
-           --   randomRIO (0,8)
-           -- else
-           --   return $ bestMove position
-  position <- return (position `move` idx)
-  putStrLn (render position)
-  if not (isEnd position) then do
-    moveLoop position (other player)
+            putStrLn (render position)
+            askForMove position
+          else
+            if isBlank position then
+              randomRIO (0,8)
+            else
+              return $ bestMove position
+  if idx < 9 then do
+    position <- return (position `move` idx)
+    if isEnd position then do
+      if position `isWinFor` 'X' then do
+        putStrLn ((show x)++" wins")
+      else if position `isWinFor` 'O' then do
+        putStrLn ((show o)++" wins")
+      else do
+        putStrLn "draw"
+      putStrLn (render position)
+    else
+      moveLoop position (other player) x o
   else do
-    putStrLn "Thanks for Playing"
+    putStrLn "Goodbye"
 
 play = do
   player <- askForPlayer
-  moveLoop initPosition player
+  moveLoop initPosition player player (other player)
   putStrLn "done"

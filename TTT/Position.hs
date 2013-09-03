@@ -55,7 +55,7 @@ isWinFor (Position board _) turn =
         matchLine = all (==turn)
 
 spaces :: Position -> Int
-spaces (Position board turn) = length . filter (==' ') $ board
+spaces (Position board turn) = length $ filter (==' ') board
 
 minimax :: Position -> Int
 minimax position@(Position board turn)
@@ -69,9 +69,9 @@ minimax position@(Position board turn)
     (spaces position)
 
 bestMove :: Position -> Int
-bestMove position@(Position board turn) =
+bestMove position@(Position _ turn) =
   fst . (choose turn maximumBy minimumBy) (compare `on` snd) .
-  map (\i -> (i, minimax (position `move` i))) $ possibleMoves position
+  map (\i -> (i, minimax $ position `move` i)) $ possibleMoves position
 
 isEnd :: Position -> Bool
 isEnd position =
