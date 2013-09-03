@@ -7,6 +7,8 @@ module TTT.Position (
  ,isWinFor
  ,minimax
  ,bestMove
+ ,isEnd
+ ,isBlank
 )  where
 
 import Data.List
@@ -61,10 +63,19 @@ minimax position@(Position board turn)
   | position `isWinFor` 'O' = (-100)
   | spaces position == 0 = 0
   | otherwise =
-    choose turn (+) (-)
-    (choose turn maximum minimum . map (minimax . (position `move`)) $
-      possibleMoves position)
+    (choose turn (+) (-))
+    ((choose turn maximum minimum) . map (\i -> minimax $ position `move` i)
+      $ possibleMoves position)
     (spaces position)
 
-bestMove position =
-  map (\i -> (i, minimax $ position `move` i)) $ possibleMoves position
+bestMove :: Position -> Int
+bestMove position@(Position board turn) =
+  fst . (choose turn maximumBy minimumBy) (compare `on` snd) .
+  map (\i -> (i, minimax (position `move` i))) $ possibleMoves position
+
+isEnd :: Position -> Bool
+isEnd position =
+  position `isWinFor` 'X' || position `isWinFor` 'O' || spaces position == 0
+
+isBlank :: Position -> Bool
+isBlank (Position board turn) = all (==' ') board

@@ -21,15 +21,15 @@ main = hspec $ do
     context "move" $ do
       it "should make a move" $ do
         (Position ("XX "
-                 ++"   "
-                 ++" OO") 'X') `move` 3 `shouldBe` (Position ("XX "
-                                                            ++"X  "
-                                                            ++" OO") 'O')
+                 ++" OO"
+                 ++"   ") 'X') `move` 3 `shouldBe` (Position ("XX "
+                                                            ++"XOO"
+                                                            ++"   ") 'O')
     context "possibleMoves" $ do
       it "should list possible moves for a position" $ do
         possibleMoves (Position ("XX "
-                               ++" O "
-                               ++"   ") 'O') `shouldBe` [2,3,5,6,7,8]
+                              ++ " OO"
+                              ++"   ") 'X') `shouldBe` [2,3,6,7,8]
     context "isWinFor" $ do
       it "should determine no win" $ do
         initPosition `isWinFor` 'X' `shouldBe` False
@@ -75,15 +75,30 @@ main = hspec $ do
                          ++"XOX"
                          ++"XOX") 'X') `shouldBe` 0
       it "should determine a win for X in 1 move" $ do
-        minimax (Position ("X  "
-                         ++" X "
+        minimax (Position ("XX "
+                         ++"   "
                          ++"   ") 'X') `shouldBe` 107
       it "should determine a win for O in 1 move" $ do
-        minimax (Position ("O  "
-                         ++" O "
+        minimax (Position ("OO "
+                         ++"   "
                          ++"   ") 'O') `shouldBe` (-107)
     context "bestMove" $ do
-      it "should determine the best move" $ do
-        bestMove (Position ("   "
-                          ++"   "
-                          ++"   ") 'X') `shouldBe` []
+      it "should find the best move for X" $ do
+        bestMove (Position ("X  "
+                          ++" X "
+                          ++"   ") 'X') `shouldBe` 8
+      it "should find the best move for O" $ do
+        bestMove (Position ("O  "
+                          ++" O "
+                          ++"   ") 'O') `shouldBe` 8
+    context "isEnd" $ do
+      it "should determine that it is not the end" $ do
+        isEnd (Position ("   "++"   "++"   ") 'X') `shouldBe` False
+      it "should determine if the game has ended due to win for X" $ do
+        isEnd (Position ("XXX"++"   "++"   ") 'X') `shouldBe` True
+      it "should determine if the game has ended due to win for O" $ do
+        isEnd (Position ("OOO"++"   "++"   ") 'X') `shouldBe` True
+      it "should determine if the game has ended due to a draw" $ do
+        isEnd (Position ("OXO"
+                       ++"XOX"
+                       ++"XOX") 'X') `shouldBe` True
