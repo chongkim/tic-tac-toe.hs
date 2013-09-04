@@ -1,5 +1,11 @@
 module TTT.Game (
-  play
+  Player (..)
+ ,play
+ ,askForPlayer
+ ,askForMove
+ ,askToPlayAgain
+ ,displayWinner
+ ,moveLoop
 )  where
 
 import TTT.Position
@@ -11,7 +17,7 @@ other :: Player -> Player
 other Human = Computer
 other Computer = Human
 
-askForPlayer = do
+askForPlayer getLine = do
   putStrLn "Who do you want to move first?"
   putStrLn "  1. Computer"
   putStrLn "  2. Human"
@@ -19,17 +25,27 @@ askForPlayer = do
   case ans of
     "1" -> return Computer
     "2" -> return Human
-    _   -> askForPlayer
+    _   -> do
+             putStrLn "Please choose 1 or 2"
+             askForPlayer getLine
 
-askForMove = do
+askForMove getLine position = do
   putStrLn "Move (q - quit)"
   ans <- getLine
   if ans == "q" then
     return 9
-  else if ans!!0 `elem` ['0'..'8'] then
-    return (read ans :: Int)
+  else if ans!!0 `elem` ['1'..'9'] then
+    return ((read ans :: Int) - 1)
   else
-    askForMove
+    askForMove getLine position
+
+askToPlayAgain getLine = do
+  putStrLn "Do you want to play again? (y/n)"
+  ans <- getLine
+  case ans of
+    "y" -> return True
+    "n" -> return False
+    _   -> do askToPlayAgain getLine
 
 displayWinner position x o = do
   putStrLn (render position)
@@ -48,17 +64,26 @@ moveLoop position player x o = do
            else
              return (bestMove position)
          else
-           askForMove
+           askForMove getLine position
   if idx == 9 then do
-    putStrLn "Goodbye"
+    return False
   else do
     position <- return (position `move` idx)
     if isEnd position then do
       displayWinner position x o
+      return True
     else do
       moveLoop position (other player) x o
 
-play = do
-  player <- askForPlayer
+play getLine = do
+  player <- askForPlayer getLine
   position <- return initPosition
-  moveLoop position player player (other player)
+  doPrompt <- moveLoop position player player (other player)
+  if doPrompt then do
+    putStrLn "Goodbye"
+  else do
+    isPlayAgain <- askToPlayAgain getLine
+    if isPlayAgain then do
+      play getLine
+    else do
+      putStrLn "Goodbye"

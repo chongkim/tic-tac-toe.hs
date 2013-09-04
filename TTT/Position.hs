@@ -26,7 +26,7 @@ render :: Position -> String
 render (Position board turn) =
   unlines . intersperse (replicate (dim*4-1) '-') .
   map (concat . intersperse "|") . chunksOf dim .
-  map (\(i,c) -> " "++(if c==' ' then show i else [c])++" ") $
+  map (\(i,c) -> " "++(if c==' ' then show (i+1) else [c])++" ") $
   zip [0..] board
 
 choose :: Char -> a -> a -> a
