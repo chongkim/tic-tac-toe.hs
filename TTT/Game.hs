@@ -29,13 +29,18 @@ askForPlayer getLine = do
              putStrLn "Please choose 1 or 2"
              askForPlayer getLine
 
-askForMove getLine position = do
+askForMove getLine position@(Position board _) = do
   putStrLn "Move (q - quit)"
   ans <- getLine
   if ans == "q" then
     return 9
-  else if ans!!0 `elem` ['1'..'9'] then
-    return ((read ans :: Int) - 1)
+  else if ans!!0 `elem` ['1'..'9'] then do
+    idx <- return ((read ans :: Int) - 1)
+    if (board!!idx == ' ') then
+      return idx
+    else do
+      putStrLn "Please enter a valid move"
+      askForMove getLine position
   else
     askForMove getLine position
 
