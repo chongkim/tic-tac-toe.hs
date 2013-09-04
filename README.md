@@ -7,7 +7,7 @@ Tic Tac Toe in Haskell
 Install
 ---
 
-Get the (Haskell Platform)[http://www.haskell.org/platform/]
+Get the [Haskell Platform](http://www.haskell.org/platform/)
 
 
 Running
