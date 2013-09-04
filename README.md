@@ -9,6 +9,11 @@ Install
 
 Get the [Haskell Platform](http://www.haskell.org/platform/)
 
+Probably the best way on a mac is to use Homebrew:
+
+```bash
+brew install haskell-platform
+```
 
 Running
 ---
