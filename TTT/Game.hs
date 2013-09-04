@@ -80,10 +80,10 @@ play getLine = do
   position <- return initPosition
   doPrompt <- moveLoop position player player (other player)
   if doPrompt then do
-    putStrLn "Goodbye"
-  else do
     isPlayAgain <- askToPlayAgain getLine
     if isPlayAgain then do
       play getLine
     else do
       putStrLn "Goodbye"
+  else do
+    putStrLn "Goodbye"

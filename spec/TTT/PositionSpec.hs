@@ -13,11 +13,11 @@ main = hspec $ do
       it "should render a position" $ do
         render (Position ("XX "
                         ++" OO"
-                        ++"   ") 'X') `shouldBe` " X | X | 2 \n"
+                        ++"   ") 'X') `shouldBe` " X | X | 3 \n"
                                               ++ "-----------\n"
-                                              ++ " 3 | O | O \n"
+                                              ++ " 4 | O | O \n"
                                               ++ "-----------\n"
-                                              ++ " 6 | 7 | 8 \n"
+                                              ++ " 7 | 8 | 9 \n"
     context "move" $ do
       it "should make a move" $ do
         (Position ("XX "
