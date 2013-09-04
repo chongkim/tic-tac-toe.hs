@@ -34,14 +34,15 @@ askForMove getLine position@(Position board _) = do
   ans <- getLine
   if ans == "q" then
     return 9
-  else if ans!!0 `elem` ['1'..'9'] then do
+  else if ans `elem` (map show [1..9]) then do
     idx <- return ((read ans :: Int) - 1)
     if (board!!idx == ' ') then
       return idx
     else do
       putStrLn "Please enter a valid move"
       askForMove getLine position
-  else
+  else do
+    putStrLn "Please enter a valid move"
     askForMove getLine position
 
 askToPlayAgain getLine = do
