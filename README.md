@@ -15,6 +15,13 @@ Probably the best way on a mac is to use Homebrew:
 brew install haskell-platform
 ```
 
+To be able to run the tests, you need to install HSpec:
+
+```bash
+cabal update
+cabal install hspec
+```
+
 Running
 ---
 
