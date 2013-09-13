@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-rm Guardfile
-rm -r TTT
-rm -r spec
-rm Main.hs
+rm -f Guardfile
+rm -rf TTT
+rm -rf spec
+rm -f Main.hs
