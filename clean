@@ -3,4 +3,4 @@
 rm -f Guardfile
 rm -rf TTT
 rm -rf spec
-rm -f Main.hs
+rm -f *.hs
