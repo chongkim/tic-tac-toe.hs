@@ -64,4 +64,6 @@ main = hspec $ do
       it "should play a complete game" $ do
         result <- evalStateT play (GameState getLineStub ["2", "0", "1", "3", "q"])
         result `shouldBe` ComputerWin
-      
+      it "should play to a draw" $ do
+        result <- evalStateT play (GameState getLineStub ["2", "0", "1", "6", "5", "8", "q"])
+        result `shouldBe` Draw

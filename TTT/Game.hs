@@ -70,16 +70,17 @@ play = do
 
 mainLoop player position = do
   lift $ putStrLn (render position)
-  if position `isWinFor` 'X' || position `isWinFor` 'O'
-    then if player == Human
+  if position `isWinFor` 'X' || position `isWinFor` 'O' then
+    if player == Human
       then return ComputerWin
       else return HumanWin
-    else
-      if player == Human
-        then do
-          maybeIdx <- askForMove position
-          case maybeIdx of
-            Nothing -> return Quit
-            Just idx -> mainLoop Computer (move position idx)
-        else do
-          mainLoop Human (move position (evalState (bestMove position) M.empty))
+  else if possibleMoves position == [] then return Draw
+  else
+    if player == Human
+      then do
+        maybeIdx <- askForMove position
+        case maybeIdx of
+          Nothing -> return Quit
+          Just idx -> mainLoop Computer (move position idx)
+      else do
+        mainLoop Human (move position (evalState (bestMove position) M.empty))
