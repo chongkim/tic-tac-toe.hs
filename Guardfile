@@ -23,7 +23,7 @@ module ::Guard
       end
     end
     def run(path)
-      cmd = "runghc"
+      cmd = "echo ----------------------------------------\nrunhaskell"
       cmd << " #{@options[:cli]}" if @options[:cli]
       cmd << " #{path}"
       puts cmd
@@ -34,6 +34,6 @@ end
 
 guard "haskell" do
   watch(%r{^spec/.*spec.*$}i)
-  watch(%r{^(TTT/.*)\.([^./]+)$}) { |m| "spec/#{m[1]}Spec.#{m[2]}" }
+  watch(%r{^(TTT/.*)\.([^./]+)$}) { |m| "spec/#{m[1]}_spec.#{m[2]}" }
 end
 

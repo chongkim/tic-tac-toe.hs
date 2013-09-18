@@ -1,95 +1,85 @@
 module TTT.Game (
   Player (..)
- ,play
+ ,GameState (..)
+ ,GameStatus (..)
+ ,render
  ,askForPlayer
  ,askForMove
- ,askToPlayAgain
- ,displayWinner
- ,moveLoop
+ ,play
 )  where
 
+import Control.Monad.State
 import TTT.Position
-import System.Random
+import Data.Char
+import Data.List.Split
+import Data.List
 
-data Player = Computer | Human deriving (Show, Eq)
+import TTT.Engine
+import Control.Monad.State
+import qualified Data.Map as M
 
-other :: Player -> Player
-other Human = Computer
-other Computer = Human
+data Player = Computer | Human deriving (Show, Eq, Ord)
+data GameState = GameState (StateT GameState IO String) [String]
+data GameStatus = Quit | ComputerWin | HumanWin | Draw deriving (Show, Eq, Ord)
 
-askForPlayer getLine = do
-  putStrLn "Who do you want to move first?"
-  putStrLn "  1. Computer"
-  putStrLn "  2. Human"
-  ans <- getLine
+render (Position board turn) =
+  unlines . intersperse (replicate (dim*4-1) '-') . map (intercalate "|") .
+  chunksOf dim . map (pad . display) $ zip [0..] board
+  where display (i,' ') = intToDigit i
+        display (_, c) = c
+        pad c = ' ':c:" "
+
+getline = do
+  GameState fn x <- get
+  fn
+
+askForPlayer = do
+  lift $ putStrLn "Who do you want to go first?"
+  lift $ putStrLn "  1. Computer"
+  lift $ putStrLn "  2. Human"
+  lift $ putStrLn "  q - quit"
+  ans <- getline
   case ans of
-    "1" -> return Computer
-    "2" -> return Human
-    _   -> do
-             putStrLn "Please choose 1 or 2"
-             askForPlayer getLine
+    "q" -> return Nothing
+    "1" -> return $ Just Computer
+    "2" -> return $ Just Human
+    _   -> askForPlayer
 
-askForMove getLine position@(Position board _) = do
-  putStrLn "Move (q - quit)"
-  ans <- getLine
-  if ans == "q" then
-    return 9
-  else if ans `elem` (map show [1..9]) then do
-    idx <- return ((read ans :: Int) - 1)
-    if (board!!idx == ' ') then
-      return idx
-    else do
-      putStrLn "Please enter a valid move"
-      askForMove getLine position
-  else do
-    putStrLn "Please enter a valid move"
-    askForMove getLine position
-
-askToPlayAgain getLine = do
-  putStrLn "Do you want to play again? (y/n)"
-  ans <- getLine
+askForMove position@(Position board turn) = do
+  lift $ putStrLn "Make a move"
+  ans <- getline
   case ans of
-    "y" -> return True
-    "n" -> return False
-    _   -> do askToPlayAgain getLine
+    "q" -> return Nothing
+    [c] | isDigit c || c `elem` "abcdef" -> do
+      let idx = digitToInt c
+      if 0 <= idx && idx < size && board !! idx == ' '
+        then return $ Just idx
+        else do
+          lift $ putStrLn "Pick an empty square on the board"
+          askForMove position
+    _ -> do
+      lift $ putStrLn "invalid input.  Please Make a move"
+      askForMove position
 
-displayWinner position x o = do
-  putStrLn (render position)
-  if position `isWinFor` 'X' then do
-    putStrLn ("Winner "++(show x))
-  else if position `isWinFor` 'O' then do
-    putStrLn ("Winner "++(show o))
-  else do
-    putStrLn ("Draw.")
+play = do
+  lift $ putStrLn "Welcome to Tic Tac Toe"
+  maybePlayer <- askForPlayer
+  case maybePlayer of
+    Nothing -> return Quit
+    Just player -> mainLoop player initPosition
 
-moveLoop position player x o = do
-  putStrLn (render position)
-  idx <- if player == Computer then
-           if isBlank position then do
-             randomRIO (0,8)
-           else
-             return (bestMove position)
-         else
-           askForMove getLine position
-  if idx == 9 then do
-    return False
-  else do
-    position <- return (position `move` idx)
-    if isEnd position then do
-      displayWinner position x o
-      return True
-    else do
-      moveLoop position (other player) x o
-
-play getLine = do
-  player <- askForPlayer getLine
-  position <- return initPosition
-  doPrompt <- moveLoop position player player (other player)
-  if doPrompt then do
-    isPlayAgain <- askToPlayAgain getLine
-    if isPlayAgain then do
-      play getLine
-    else do
-      putStrLn "Goodbye"
-  else do
-    putStrLn "Goodbye"
+mainLoop player position = do
+  lift $ putStrLn (render position)
+  if position `isWinFor` 'X' || position `isWinFor` 'O'
+    then if player == Human
+      then return ComputerWin
+      else return HumanWin
+    else
+      if player == Human
+        then do
+          maybeIdx <- askForMove position
+          case maybeIdx of
+            Nothing -> return Quit
+            Just idx -> mainLoop Computer (move position idx)
+        else do
+          mainLoop Human (move position (evalState (bestMove position) M.empty))
